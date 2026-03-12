@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>푸르른 기록</title>
     <style>
-        /* 기본 레이아웃 */
+        /* 기본 레이아웃 및 배경 */
         body { font-family: -apple-system, sans-serif; margin: 0; padding: 0; background-color: #f2f2f7; color: #333; padding-bottom: 160px; overflow-x: hidden; }
         #bg-image { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1; opacity: 0.3; display: none; }
         
@@ -13,7 +13,7 @@
         #lock-screen { position: fixed; top:0; left:0; width: 100%; height: 100%; background: #f2f2f7; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #lock-bg-display { position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover; opacity: 0.4; z-index: -1; }
         #lock-screen input { padding: 15px; font-size: 20px; border: 2px solid #3b82f6; border-radius: 12px; width: 220px; text-align: center; margin-bottom: 15px; outline: none; background: rgba(255,255,255,0.9); }
-        #lock-screen button { padding: 15px 35px; font-size: 18px; background: #3b82f6; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        #lock-screen button { padding: 15px 35px; font-size: 18px; background: #3b82f6; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
 
         /* 메인 컨텐츠 및 탭 */
         #main-content { display: none; }
@@ -22,10 +22,11 @@
         .tab { padding: 8px 18px; border-radius: 20px; background: #eee; border: none; font-size: 14px; cursor: pointer; color: #555; }
         .tab.active { background: #3b82f6; color: white; font-weight: bold; }
         
-        /* 에디터 및 게시글 */
+        /* 에디터 및 게시글 리스트 */
         .container { padding: 15px; max-width: 600px; margin: 0 auto; }
         .editor { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px; }
         .editor select, .editor input, .editor textarea { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 10px; margin-bottom: 10px; box-sizing: border-box; outline: none; font-size: 15px; }
+        
         .post { background: white; padding: 18px; border-radius: 15px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); border: 1px solid #efefef; }
         .post-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .post-meta { font-size: 12px; color: #3b82f6; font-weight: bold; }
@@ -40,9 +41,11 @@
         #settings-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 400px; background: white; border-radius: 25px; padding: 25px; box-shadow: 0 10px 50px rgba(0,0,0,0.3); z-index: 10001; }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; }
 
-        /* BGM 제어 바 */
+        /* BGM 컨트롤 바 */
         .bgm-bar { position: fixed; bottom: 15px; left: 15px; right: 15px; background: rgba(59, 130, 246, 0.95); color: white; border-radius: 20px; padding: 12px; z-index: 1000; backdrop-filter: blur(10px); }
-        .volume-control { display: flex; align-items: center; gap: 10px; margin-top: 8px; font-size: 12px; }
+        .bgm-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .play-btn { background: white; color: #3b82f6; border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .volume-control { display: flex; align-items: center; gap: 10px; flex: 1; }
         .volume-control input[type="range"] { flex: 1; height: 4px; accent-color: white; cursor: pointer; }
     </style>
 </head>
@@ -53,6 +56,7 @@
         <h2 style="color: #3b82f6; z-index: 1; text-shadow: 0 2px 8px rgba(255,255,255,0.8);">🔒 푸르른 기록</h2>
         <input type="password" id="pwd-input" placeholder="비밀번호" onkeypress="if(event.keyCode==13) checkPwd()">
         <button onclick="checkPwd()">입장하기</button>
+        <p style="font-size:11px; color:#888; margin-top:15px; z-index:1;">※ 입장 시 소리가 재생됩니다.</p>
     </div>
 
     <div id="post-detail">
@@ -89,9 +93,9 @@
             <div class="editor">
                 <select id="cat-select"></select>
                 <input type="text" id="post-title-in" placeholder="제목">
-                <textarea id="post-content-in" placeholder="기록을 남기세요..."></textarea>
+                <textarea id="post-content-in" placeholder="오늘의 기록을 남겨보세요..."></textarea>
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <label style="font-size:13px; color:#888;">📷 <input type="file" id="post-files" multiple accept="image/*"></label>
+                    <label style="font-size:13px; color:#888; cursor:pointer;">📷 사진 선택 <input type="file" id="post-files" multiple accept="image/*" style="display:none;"></label>
                     <button id="submit-btn" onclick="savePost()" style="background:#3b82f6; color:white; border:none; padding:10px 25px; border-radius:20px; font-weight:bold;">등록</button>
                 </div>
             </div>
@@ -99,44 +103,45 @@
         </div>
 
         <div class="bgm-bar">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                <span style="font-size:12px; font-weight:bold;">🎵 BGM 재생 중</span>
-                <span id="vol-txt" style="font-size:10px;">Vol: 50%</span>
+            <div class="bgm-controls">
+                <button id="toggle-play" class="play-btn" onclick="toggleMusic()">▶</button>
+                <div class="volume-control">
+                    <span style="font-size:12px; font-weight:bold;">BGM</span>
+                    <input type="range" id="volume-slider" min="0" max="100" value="50" oninput="setVolume(this.value)">
+                </div>
+                <span id="vol-txt" style="font-size:10px; width:30px;">50%</span>
             </div>
-            <div style="width:100%; height:0; overflow:hidden; visibility:hidden;">
-                <div id="player"></div>
-            </div>
-            <div class="volume-control">
-                <span>🔈</span>
-                <input type="range" id="volume-slider" min="0" max="100" value="50" oninput="setVolume(this.value)">
-                <span>🔊</span>
-            </div>
+            <div style="display:none;"><div id="player"></div></div>
         </div>
     </div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
-        let player;
-        let editIndex = -1;
+        let player, isPlaying = false, editIndex = -1, currentDetailIdx = -1;
         let categories = JSON.parse(localStorage.getItem('blue_tabs') || '["일반", "일기", "메모", "페르소나"]');
         let currentTab = '전체';
 
-        // 유튜브 플레이어 초기화
+        // 유튜브 플레이어 설정
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('player', {
                 height: '0', width: '0',
-                videoId: 'NQPtBQhtTYQ', // 채린 님이 사용하시는 영상 ID
-                playerVars: { 'autoplay': 0, 'loop': 1, 'playlist': 'NQPtBQhtTYQ' },
-                events: { 'onReady': onPlayerReady }
+                videoId: 'NQPtBQhtTYQ',
+                playerVars: { 'autoplay': 0, 'loop': 1, 'playlist': 'NQPtBQhtTYQ', 'controls': 0 },
+                events: { 'onReady': (e) => e.target.setVolume(50) }
             });
         }
 
-        function onPlayerReady(event) { event.target.setVolume(50); }
+        function toggleMusic() {
+            if (!player) return;
+            if (isPlaying) { player.pauseVideo(); isPlaying = false; } 
+            else { player.playVideo(); isPlaying = true; }
+            document.getElementById('toggle-play').innerText = isPlaying ? "⏸" : "▶";
+        }
 
         function setVolume(val) {
             if (player && player.setVolume) {
                 player.setVolume(val);
-                document.getElementById('vol-txt').innerText = `Vol: ${val}%`;
+                document.getElementById('vol-txt').innerText = `${val}%`;
             }
         }
 
@@ -144,7 +149,8 @@
             if (document.getElementById('pwd-input').value === '1969') {
                 sessionStorage.setItem('blue_auth', 'true');
                 unlock();
-                if (player) player.playVideo(); // 입장 버튼 클릭 시 음악 시작
+                // 입장과 동시에 재생 시도 (사용자 클릭 이벤트 활용)
+                setTimeout(() => { if(player) { player.playVideo(); isPlaying = true; document.getElementById('toggle-play').innerText = "⏸"; } }, 500);
             } else { alert('비밀번호가 틀렸습니다.'); }
         }
 
@@ -155,8 +161,7 @@
         }
 
         window.onload = () => {
-            const mb = localStorage.getItem('blue_bg_img');
-            const lb = localStorage.getItem('blue_lock_bg');
+            const mb = localStorage.getItem('blue_bg_img'), lb = localStorage.getItem('blue_lock_bg');
             if(mb) { document.getElementById('bg-image').src = mb; document.getElementById('bg-image').style.display = 'block'; }
             if(lb) { document.getElementById('lock-bg-display').src = lb; }
             if (sessionStorage.getItem('blue_auth') === 'true') unlock();
@@ -173,7 +178,6 @@
 
         function renderTabs() {
             const container = document.getElementById('tab-container');
-            if(!container) return;
             container.innerHTML = `<button class="tab ${currentTab==='전체'?'active':''}" onclick="setTab('전체')">전체</button>`;
             container.innerHTML += categories.map(cat => `<button class="tab ${currentTab===cat?'active':''}" onclick="setTab('${cat}')">${cat}</button>`).join('');
             container.innerHTML += `<button class="tab" onclick="openSettings()">⚙️</button>`;
@@ -183,12 +187,9 @@
         function setTab(name) { currentTab = name; renderTabs(); loadPosts(); }
 
         async function savePost() {
-            const title = document.getElementById('post-title-in').value || "제목 없음";
-            const content = document.getElementById('post-content-in').value;
-            const cat = document.getElementById('cat-select').value;
-            const files = document.getElementById('post-files').files;
-            const now = new Date();
-            const dateStr = `${now.getFullYear()}. ${now.getMonth() + 1}. ${now.getDate()}.`;
+            const title = document.getElementById('post-title-in').value || "제목 없음", content = document.getElementById('post-content-in').value;
+            const cat = document.getElementById('cat-select').value, files = document.getElementById('post-files').files;
+            const now = new Date(), dateStr = `${now.getFullYear()}. ${now.getMonth() + 1}. ${now.getDate()}.`;
 
             let imgs = [];
             for(let f of files) {
@@ -212,7 +213,6 @@
             try {
                 const posts = JSON.parse(localStorage.getItem('blue_posts_v2') || '[]');
                 const list = document.getElementById('post-list');
-                if(!list) return;
                 list.innerHTML = '';
                 posts.forEach((p, i) => {
                     if (currentTab !== '전체' && p.cat !== currentTab) return;
@@ -253,6 +253,14 @@
         }
 
         function closeDetail() { document.getElementById('post-detail').style.display = 'none'; }
+        function handleDeleteFromDetail() {
+            if(confirm("삭제하시겠습니까?")) {
+                const posts = JSON.parse(localStorage.getItem('blue_posts_v2') || '[]');
+                posts.splice(currentDetailIdx, 1);
+                localStorage.setItem('blue_posts_v2', JSON.stringify(posts));
+                location.reload();
+            }
+        }
         function openSettings() { document.querySelector('.modal-overlay').style.display = 'block'; document.getElementById('settings-modal').style.display = 'block'; }
         function closeSettings() { document.querySelector('.modal-overlay').style.display = 'none'; document.getElementById('settings-modal').style.display = 'none'; }
     </script>
