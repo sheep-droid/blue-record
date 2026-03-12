@@ -2,114 +2,214 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>푸르른 기록</title>
     <style>
-        :root { --point-blue: #007aff; --bg-color: #f0f2f5; --container-bg: rgba(255, 255, 255, 0.92); --text-main: #1d1d1f; --border: rgba(0,0,0,0.08); }
-        body { margin: 0; font-family: 'Pretendard', sans-serif; background: var(--bg-color) no-repeat center center fixed; background-size: cover; color: var(--text-main); display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px 0; }
-        .container { width: 95%; max-width: 600px; background: var(--container-bg); padding: 25px; border-radius: 24px; backdrop-filter: blur(15px); box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
-        .memo-images-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; margin-top: 15px; }
-        .memo-images-grid img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 12px; }
-        .memo-images-scroll { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; }
-        .memo-images-scroll img { width: 100%; border-radius: 12px; }
-        #image-preview-container { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 10px; }
-        .preview-img { width: 80px; height: 80px; object-fit: cover; border-radius: 10px; }
+        /* 기본 UI 스타일 */
+        body { font-family: -apple-system, sans-serif; margin: 0; padding: 0; background-color: #f2f2f7; color: #333; padding-bottom: 120px; }
+        #bg-image { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1; opacity: 0.3; display: none; }
+        
+        /* 비밀번호 잠금 화면 */
+        #lock-screen { position: fixed; top:0; left:0; width: 100%; height: 100%; background: #f2f2f7; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #lock-screen input { padding: 15px; font-size: 20px; border: 2px solid #3b82f6; border-radius: 10px; width: 200px; text-align: center; margin-bottom: 15px; outline: none; }
+        #lock-screen button { padding: 15px 30px; font-size: 18px; background: #3b82f6; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+
+        /* 메인 콘텐츠 */
+        #main-content { display: none; }
+        .header { text-align: center; padding: 15px; font-size: 20px; font-weight: bold; background: rgba(255,255,255,0.9); border-bottom: 1px solid #ddd; }
+        
+        /* 상단 탭 */
+        .tabs { display: flex; overflow-x: auto; padding: 10px 15px; background: rgba(255,255,255,0.9); border-bottom: 1px solid #ddd; white-space: nowrap; gap: 8px; }
+        .tab { padding: 8px 18px; border-radius: 20px; background: #eee; border: none; font-size: 14px; cursor: pointer; color: #555; }
+        .tab.active { background: #3b82f6; color: white; font-weight: bold; }
+        
+        /* 글쓰기 에디터 */
+        .container { padding: 15px; max-width: 600px; margin: 0 auto; }
+        .editor { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        .editor select { padding: 8px 12px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 15px; outline: none; color: #3b82f6; font-weight: bold; }
+        .editor input[type="text"] { width: 100%; border: none; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 18px; font-weight: bold; margin-bottom: 15px; outline: none; box-sizing: border-box; }
+        .editor textarea { width: 100%; border: none; height: 80px; resize: none; font-size: 16px; outline: none; box-sizing: border-box; color: #555; }
+        .editor-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
+        .btn-submit { background: #3b82f6; color: white; border: none; padding: 12px 30px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        
+        /* 목록 (까보옥, 돌리 스타일) */
+        .post { background: transparent; padding: 20px 0; border-bottom: 1px solid #ddd; }
+        .post-meta { font-size: 14px; color: #888; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .post-title-row { display: flex; align-items: center; gap: 8px; }
+        .post-cat { color: #3b82f6; font-weight: bold; font-size: 15px; }
+        .post-title { font-size: 17px; font-weight: 500; color: #111; }
+        .post-content { font-size: 15px; line-height: 1.6; white-space: pre-wrap; margin-top: 10px; color: #444; }
+        .post-images { display: flex; gap: 8px; overflow-x: auto; margin-top: 15px; }
+        .post-images img { width: 120px; height: 120px; object-fit: cover; border-radius: 12px; }
+        
+        /* BGM 플레이어 */
+        .bgm-bar { position: fixed; bottom: 15px; left: 15px; right: 15px; background: rgba(59, 130, 246, 0.95); color: white; border-radius: 20px; padding: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); backdrop-filter: blur(10px); z-index: 1000; }
+        .bgm-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; font-size: 14px; }
+        .bgm-iframe-container { width: 100%; height: 60px; border-radius: 12px; overflow: hidden; background: #000; }
+        
+        /* 사진 미리보기 */
+        #img-preview { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 15px; }
+        #img-preview img { width: 70px; height: 70px; object-fit: cover; border-radius: 8px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1 id="site-title" contenteditable="true" style="font-size: 1.8rem; margin-bottom: 15px;">푸르른 기록</h1>
-        <div id="editor-box" style="background: #fff; padding: 18px; border-radius: 18px; margin-bottom: 25px; border: 1px solid var(--border);">
-            <input type="text" id="memo-title-input" style="width: 100%; border: none; border-bottom: 1px solid var(--border); padding: 8px 0; font-size: 1.1rem; font-weight: bold; outline: none;" placeholder="제목">
-            <textarea id="memo-input" style="width: 100%; border: none; outline: none; resize: none; min-height: 100px; margin-top:10px;" placeholder="기록할 내용을 입력하세요..."></textarea>
-            <div id="image-preview-container"></div>
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <label style="cursor:pointer; font-size:0.8rem; color:#888;">📷 사진 추가<input type="file" id="img-upload" hidden accept="image/*" multiple></label>
-                <button onclick="saveMemo()" style="padding:10px 25px; background:var(--point-blue); color:white; border:none; border-radius:12px; font-weight:bold;">등록</button>
+
+    <div id="lock-screen">
+        <h2 style="color: #3b82f6; margin-bottom: 20px;">🔒 푸르른 기록</h2>
+        <input type="password" id="pwd-input" placeholder="비밀번호">
+        <button onclick="checkPwd()">입장하기</button>
+    </div>
+
+    <div id="main-content">
+        <img id="bg-image" src="" onerror="this.style.display='none'">
+        
+        <div class="tabs" id="tab-container">
+            <button class="tab active" onclick="setTab('전체')">전체</button>
+            <button class="tab" onclick="setTab('일반')">일반</button>
+            <button class="tab" onclick="setTab('일기')">일기</button>
+            <button class="tab" onclick="setTab('메모')">메모</button>
+            <button class="tab" onclick="setTab('페르소나')">페르소나</button>
+            <button class="tab" onclick="manageSettings()">⚙️ 관리</button>
+        </div>
+
+        <div class="container">
+            <div class="editor">
+                <select id="cat-select">
+                    <option value="일반">일반</option>
+                    <option value="일기">일기</option>
+                    <option value="메모">메모</option>
+                    <option value="페르소나">페르소나</option>
+                </select>
+                <input type="text" id="title" placeholder="제목">
+                <textarea id="content" placeholder="기록할 내용을 입력하세요..."></textarea>
+                
+                <div id="img-preview"></div>
+                
+                <div class="editor-footer">
+                    <label style="color: #888; font-size: 14px; cursor: pointer;">
+                        📷 사진 추가 <input type="file" id="file-input" multiple accept="image/*" style="display: none;">
+                    </label>
+                    <button class="btn-submit" onclick="savePost()">등록</button>
+                </div>
+            </div>
+
+            <div id="post-list"></div>
+        </div>
+
+        <div class="bgm-bar">
+            <div class="bgm-header">
+                <span>BGM 🎵 Sea Breeze</span>
+                <span>재생 중</span>
+            </div>
+            <div class="bgm-iframe-container" id="bgm-container">
+                <iframe width="100%" height="100%" src="https://www.youtube.com/embed/5qap5aO4i9A?autoplay=1&loop=1&playlist=5qap5aO4i9A" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
             </div>
         </div>
-        <div id="memo-list"></div>
     </div>
 
     <script>
-        let uploadedImages = [];
-        let viewMode = 'grid';
+        // 🔐 비밀번호 확인 로직
+        function checkPwd() {
+            const pwd = document.getElementById('pwd-input').value;
+            if (pwd === '1969') { 
+                sessionStorage.setItem('auth_blue', 'true');
+                unlockScreen();
+            } else {
+                alert('비밀번호가 일치하지 않습니다.');
+                document.getElementById('pwd-input').value = '';
+            }
+        }
 
-        document.getElementById('img-upload').onchange = (e) => {
-            Array.from(e.target.files).forEach(file => {
-                const reader = new FileReader();
-                reader.onload = (ex) => { uploadedImages.push(ex.target.result); renderPreviews(); };
-                reader.readAsDataURL(file);
-            });
+        function unlockScreen() {
+            document.getElementById('lock-screen').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+            loadPosts();
+        }
+
+        window.onload = () => {
+            if (sessionStorage.getItem('auth_blue') === 'true') unlockScreen();
+            const savedBg = localStorage.getItem('blue_bg_img');
+            if(savedBg) {
+                document.getElementById('bg-image').src = savedBg;
+                document.getElementById('bg-image').style.display = 'block';
+            }
         };
 
-        function renderPreviews() {
-            document.getElementById('image-preview-container').innerHTML = uploadedImages.map(src => `<img src="${src}" class="preview-img">`).join('');
+        // 📷 사진 및 글 등록 로직
+        let images = [];
+        document.getElementById('file-input').addEventListener('change', function(e) {
+            Array.from(e.target.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (event) => { images.push(event.target.result); renderPreview(); };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        function renderPreview() {
+            document.getElementById('img-preview').innerHTML = images.map(src => `<img src="${src}">`).join('');
         }
 
-        function saveMemo() {
-            const title = document.getElementById('memo-title-input').value || "제목 없음";
-            const content = document.getElementById('memo-input').value;
-            if(!content && uploadedImages.length === 0) return;
-            const memos = JSON.parse(localStorage.getItem('myMemos') || "[]");
-            memos.unshift({ title, content, images: [...uploadedImages], date: new Date().toLocaleDateString() });
-            localStorage.setItem('myMemos', JSON.stringify(memos));
-            uploadedImages = []; renderPreviews();
-            document.getElementById('memo-title-input').value = ""; document.getElementById('memo-input').value = "";
-            displayMemos();
+        function savePost() {
+            const cat = document.getElementById('cat-select').value;
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+            
+            if (!title && !content && images.length === 0) return;
+
+            const posts = JSON.parse(localStorage.getItem('blue_posts_v2') || '[]');
+            const date = new Date();
+            const dateString = `${date.getFullYear()}. ${date.getMonth()+1}. ${date.getDate()}.`;
+            
+            posts.unshift({ cat, title, content, images: [...images], date: dateString });
+            localStorage.setItem('blue_posts_v2', JSON.stringify(posts));
+            
+            document.getElementById('title').value = '';
+            document.getElementById('content').value = '';
+            images = [];
+            renderPreview();
+            loadPosts();
         }
 
-        function displayMemos() {
-            const list = document.getElementById('memo-list');
-            const memos = JSON.parse(localStorage.getItem('myMemos') || "[]");
-            list.innerHTML = memos.map(m => `
-                <div style="border-bottom:1px solid #eee; padding:15px 0;">
-                    <div style="display:flex; justify-content:space-between; font-weight:bold;"><span>${m.title}</span><span style="font-size:0.8rem; color:#888;">${m.date}</span></div>
-                    <p style="white-space:pre-wrap;">${m.content}</p>
-                    <div class="memo-images-${viewMode}">${m.images.map(img => `<img src="${img}">`).join('')}</div>
+        // 📁 탭 필터링 및 관리 로직
+        let currentTab = '전체';
+        function setTab(tabName) {
+            currentTab = tabName;
+            document.querySelectorAll('.tab').forEach(t => {
+                t.classList.remove('active');
+                if(t.innerText === tabName) t.classList.add('active');
+            });
+            loadPosts();
+        }
+
+        function loadPosts() {
+            const posts = JSON.parse(localStorage.getItem('blue_posts_v2') || '[]');
+            const list = document.getElementById('post-list');
+            const filtered = currentTab === '전체' ? posts : posts.filter(p => p.cat === currentTab);
+            
+            list.innerHTML = filtered.map(p => `
+                <div class="post">
+                    <div class="post-meta">
+                        <div class="post-title-row">
+                            <span class="post-cat">[${p.cat}]</span>
+                            <span class="post-title">${p.title}</span>
+                        </div>
+                        <span>${p.date}</span>
+                    </div>
+                    ${p.content ? `<div class="post-content">${p.content}</div>` : ''}
+                    ${p.images.length > 0 ? `<div class="post-images">${p.images.map(img => `<img src="${img}">`).join('')}</div>` : ''}
                 </div>
             `).join('');
         }
-        window.onload = displayMemos;
-    </script>
-</body>
-</html>
-        document.getElementById('img-upload').onchange = (e) => {
-            Array.from(e.target.files).forEach(file => {
-                const reader = new FileReader();
-                reader.onload = (ex) => { uploadedImages.push(ex.target.result); renderPreviews(); };
-                reader.readAsDataURL(file);
-            });
-        };
 
-        function renderPreviews() {
-            document.getElementById('image-preview-container').innerHTML = uploadedImages.map(src => `<img src="${src}" class="preview-img">`).join('');
+        function manageSettings() {
+            const bgUrl = prompt("배경으로 사용할 이미지 주소(URL)를 입력해주세요.\\n비우고 확인을 누르면 배경이 초기화됩니다.");
+            if(bgUrl !== null) {
+                localStorage.setItem('blue_bg_img', bgUrl);
+                const bgImg = document.getElementById('bg-image');
+                bgImg.src = bgUrl;
+                bgImg.style.display = bgUrl ? 'block' : 'none';
+            }
         }
-
-        function saveMemo() {
-            const title = document.getElementById('memo-title-input').value || "제목 없음";
-            const content = document.getElementById('memo-input').value;
-            if(!content && uploadedImages.length === 0) return;
-            const memos = JSON.parse(localStorage.getItem('myMemos') || "[]");
-            memos.unshift({ title, content, images: [...uploadedImages], date: new Date().toLocaleDateString() });
-            localStorage.setItem('myMemos', JSON.stringify(memos));
-            uploadedImages = []; renderPreviews();
-            document.getElementById('memo-title-input').value = ""; document.getElementById('memo-input').value = "";
-            displayMemos();
-        }
-
-        function displayMemos() {
-            const list = document.getElementById('memo-list');
-            const memos = JSON.parse(localStorage.getItem('myMemos') || "[]");
-            list.innerHTML = memos.map(m => `
-                <div style="border-bottom:1px solid #eee; padding:15px 0;">
-                    <div style="display:flex; justify-content:space-between; font-weight:bold;"><span>${m.title}</span><span style="font-size:0.8rem; color:#888;">${m.date}</span></div>
-                    <p style="white-space:pre-wrap;">${m.content}</p>
-                    <div class="memo-images-${viewMode}">${m.images.map(img => `<img src="${img}">`).join('')}</div>
-                </div>
-            `).join('');
-        }
-        window.onload = displayMemos;
     </script>
 </body>
 </html>
