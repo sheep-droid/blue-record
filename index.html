@@ -5,56 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>푸르른 기록</title>
     <style>
-        /* 기본 UI 스타일 */
         body { font-family: -apple-system, sans-serif; margin: 0; padding: 0; background-color: #f2f2f7; color: #333; padding-bottom: 140px; }
         #bg-image { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1; opacity: 0.3; display: none; }
         
-        /* 비밀번호 잠금 화면 */
         #lock-screen { position: fixed; top:0; left:0; width: 100%; height: 100%; background: #f2f2f7; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #lock-screen input { padding: 15px; font-size: 20px; border: 2px solid #3b82f6; border-radius: 10px; width: 200px; text-align: center; margin-bottom: 15px; outline: none; }
         #lock-screen button { padding: 15px 30px; font-size: 18px; background: #3b82f6; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
 
-        /* 메인 콘텐츠 */
         #main-content { display: none; }
-        
-        /* 상단 탭 */
         .tabs { display: flex; overflow-x: auto; padding: 10px 15px; background: rgba(255,255,255,0.9); border-bottom: 1px solid #ddd; white-space: nowrap; gap: 8px; position: sticky; top: 0; z-index: 100; }
         .tab { padding: 8px 18px; border-radius: 20px; background: #eee; border: none; font-size: 14px; cursor: pointer; color: #555; }
         .tab.active { background: #3b82f6; color: white; font-weight: bold; }
         
-        /* 글쓰기 에디터 */
         .container { padding: 15px; max-width: 600px; margin: 0 auto; }
         .editor { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px; }
         .editor select { padding: 8px 12px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 15px; outline: none; color: #3b82f6; font-weight: bold; }
         .editor input[type="text"] { width: 100%; border: none; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 18px; font-weight: bold; margin-bottom: 15px; outline: none; box-sizing: border-box; }
         .editor textarea { width: 100%; border: none; height: 80px; resize: none; font-size: 16px; outline: none; box-sizing: border-box; color: #555; }
-        .editor-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
-        .btn-submit { background: #3b82f6; color: white; border: none; padding: 12px 30px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        .btn-submit { background: #3b82f6; color: white; border: none; padding: 12px 30px; border-radius: 20px; font-weight: bold; cursor: pointer; }
         
-        /* 목록 스타일 */
-        .post { background: white; padding: 20px; border-radius: 15px; margin-bottom: 15px; border-bottom: 1px solid #eee; }
-        .post-meta { font-size: 14px; color: #888; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .post-cat { color: #3b82f6; font-weight: bold; }
-        .post-title { font-size: 17px; font-weight: bold; color: #111; margin: 5px 0; }
+        /* 게시글 카드 및 버튼 스타일 */
+        .post { background: white; padding: 20px; border-radius: 15px; margin-bottom: 15px; position: relative; }
+        .post-actions { position: absolute; top: 15px; right: 15px; display: flex; gap: 10px; }
+        .btn-edit, .btn-delete { background: none; border: none; font-size: 13px; cursor: pointer; padding: 5px; border-radius: 5px; }
+        .btn-edit { color: #3b82f6; }
+        .btn-delete { color: #ff3b30; }
+
+        .post-meta { font-size: 13px; color: #888; margin-bottom: 5px; }
+        .post-cat { color: #3b82f6; font-weight: bold; margin-right: 5px; }
+        .post-title { font-size: 17px; font-weight: bold; margin-bottom: 8px; }
         .post-content { font-size: 15px; line-height: 1.6; white-space: pre-wrap; color: #444; }
         .post-images { display: flex; gap: 8px; overflow-x: auto; margin-top: 10px; }
         .post-images img { width: 100px; height: 100px; object-fit: cover; border-radius: 10px; }
         
-        /* BGM 플레이어 */
         .bgm-bar { position: fixed; bottom: 15px; left: 15px; right: 15px; background: rgba(59, 130, 246, 0.95); color: white; border-radius: 20px; padding: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); backdrop-filter: blur(10px); z-index: 1000; }
-        .bgm-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: bold; font-size: 13px; }
-        .bgm-iframe-container { width: 100%; height: 60px; border-radius: 10px; overflow: hidden; background: #000; }
-        
-        #img-preview { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 15px; }
-        #img-preview img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; }
+        .bgm-iframe-container { width: 100%; height: 50px; border-radius: 10px; overflow: hidden; background: #000; margin-top: 8px; }
     </style>
 </head>
 <body>
 
     <div id="lock-screen">
-        <h2 style="color: #3b82f6; margin-bottom: 20px;">🔒 푸르른 기록</h2>
+        <h2 style="color: #3b82f6;">🔒 푸르른 기록</h2>
         <input type="password" id="pwd-input" placeholder="비밀번호" onkeypress="if(event.keyCode==13) checkPwd()">
-        <button onclick="checkPwd()" style="margin-top:10px;">입장하기</button>
+        <button onclick="checkPwd()">입장하기</button>
     </div>
 
     <div id="main-content">
@@ -78,9 +71,8 @@
                 </select>
                 <input type="text" id="title" placeholder="제목을 입력하세요">
                 <textarea id="content" placeholder="오늘의 기록을 남겨보세요..."></textarea>
-                <div id="img-preview"></div>
-                <div class="editor-footer">
-                    <label style="color: #888; font-size: 14px; cursor: pointer;">📷 사진 추가 <input type="file" id="file-input" multiple accept="image/*" style="display: none;"></label>
+                <div class="editor-footer" style="display:flex; justify-content:space-between; align-items:center;">
+                    <label style="color:#888; font-size:14px;">📷 사진 <input type="file" id="file-input" multiple accept="image/*" style="display:none;"></label>
                     <button class="btn-submit" onclick="savePost()">등록</button>
                 </div>
             </div>
@@ -88,25 +80,21 @@
         </div>
 
         <div class="bgm-bar">
-            <div class="bgm-header"><span>🎵 재생 중: 요청하신 음악</span><span>BGM</span></div>
+            <div style="font-size:12px; font-weight:bold;">🎵 BGM 재생 중</div>
             <div class="bgm-iframe-container">
                 <iframe id="bgm-player" width="100%" height="100%" src="https://www.youtube.com/embed/NQPtBQhtTYQ?enablejsapi=1&autoplay=1&loop=1&playlist=NQPtBQhtTYQ" frameborder="0" allow="autoplay; encrypted-media"></iframe>
             </div>
-            <p style="font-size: 10px; margin-top: 5px; opacity: 0.8; text-align: center;">💡 소리가 안 들리면 영상의 소리 아이콘을 터치해 주세요!</p>
         </div>
     </div>
 
     <script>
-        // 비밀번호 체크 로직
+        let editIndex = -1; // 수정 중인 글의 번호
+
         function checkPwd() {
-            const pwd = document.getElementById('pwd-input').value;
-            if (pwd === '1969') {
+            if (document.getElementById('pwd-input').value === '1969') {
                 sessionStorage.setItem('auth_blue_final', 'true');
                 unlockScreen();
-            } else { 
-                alert('비밀번호가 틀렸습니다.'); 
-                document.getElementById('pwd-input').value = '';
-            }
+            } else { alert('비밀번호가 틀렸습니다.'); }
         }
 
         function unlockScreen() {
@@ -116,40 +104,53 @@
         }
 
         window.onload = () => {
-            if (sessionStorage.getItem('auth_blue_final') === 'true') {
-                unlockScreen();
-            } else {
-                document.getElementById('lock-screen').style.display = 'flex';
-                document.getElementById('main-content').style.display = 'none';
-            }
+            if (sessionStorage.getItem('auth_blue_final') === 'true') unlockScreen();
             const savedBg = localStorage.getItem('blue_bg_img');
-            if(savedBg) { 
-                document.getElementById('bg-image').src = savedBg; 
-                document.getElementById('bg-image').style.display = 'block'; 
-            }
+            if(savedBg) { document.getElementById('bg-image').src = savedBg; document.getElementById('bg-image').style.display = 'block'; }
         };
-
-        let images = [];
-        document.getElementById('file-input').addEventListener('change', function(e) {
-            Array.from(e.target.files).forEach(file => {
-                const reader = new FileReader();
-                reader.onload = (event) => { images.push(event.target.result); renderPreview(); };
-                reader.readAsDataURL(file);
-            });
-        });
-
-        function renderPreview() { document.getElementById('img-preview').innerHTML = images.map(src => `<img src="${src}">`).join(''); }
 
         function savePost() {
             const cat = document.getElementById('cat-select').value;
             const title = document.getElementById('title').value || "제목 없음";
             const content = document.getElementById('content').value;
-            if (!content && images.length === 0) return;
             const posts = JSON.parse(localStorage.getItem('blue_posts_v2') || '[]');
-            posts.unshift({ cat, title, content, images: [...images], date: new Date().toLocaleDateString() });
+
+            if (editIndex > -1) {
+                // 수정 모드
+                posts[editIndex].cat = cat;
+                posts[editIndex].title = title;
+                posts[editIndex].content = content;
+                editIndex = -1;
+                document.querySelector('.btn-submit').innerText = "등록";
+            } else {
+                // 신규 등록
+                posts.unshift({ cat, title, content, images: [], date: new Date().toLocaleDateString() });
+            }
+
             localStorage.setItem('blue_posts_v2', JSON.stringify(posts));
-            document.getElementById('title').value = ''; document.getElementById('content').value = '';
-            images = []; renderPreview(); loadPosts();
+            document.getElementById('title').value = '';
+            document.getElementById('content').value = '';
+            loadPosts();
+        }
+
+        function deletePost(index) {
+            if (confirm("이 기록을 삭제할까요?")) {
+                const posts = JSON.parse(localStorage.getItem('blue_posts_v2') || '[]');
+                posts.splice(index, 1);
+                localStorage.setItem('blue_posts_v2', JSON.stringify(posts));
+                loadPosts();
+            }
+        }
+
+        function startEdit(index) {
+            const posts = JSON.parse(localStorage.getItem('blue_posts_v2') || '[]');
+            const post = posts[index];
+            document.getElementById('cat-select').value = post.cat;
+            document.getElementById('title').value = post.title;
+            document.getElementById('content').value = post.content;
+            editIndex = index;
+            document.querySelector('.btn-submit').innerText = "수정 완료";
+            window.scrollTo(0, 0);
         }
 
         let currentTab = '전체';
@@ -157,19 +158,27 @@
 
         function loadPosts() {
             const posts = JSON.parse(localStorage.getItem('blue_posts_v2') || '[]');
-            const filtered = currentTab === '전체' ? posts : posts.filter(p => p.cat === currentTab);
-            document.getElementById('post-list').innerHTML = filtered.map(p => `
-                <div class="post">
-                    <div class="post-meta"><span class="post-cat">[${p.cat}]</span><span>${p.date}</span></div>
-                    <div class="post-title">${p.title}</div>
-                    <div class="post-content">${p.content}</div>
-                    <div class="post-images">${p.images.map(img => `<img src="${img}">`).join('')}</div>
-                </div>
-            `).join('');
+            const list = document.getElementById('post-list');
+            list.innerHTML = '';
+
+            posts.forEach((p, index) => {
+                if (currentTab !== '전체' && p.cat !== currentTab) return;
+                list.innerHTML += `
+                    <div class="post">
+                        <div class="post-actions">
+                            <button class="btn-edit" onclick="startEdit(${index})">수정</button>
+                            <button class="btn-delete" onclick="deletePost(${index})">삭제</button>
+                        </div>
+                        <div class="post-meta"><span class="post-cat">[${p.cat}]</span><span>${p.date}</span></div>
+                        <div class="post-title">${p.title}</div>
+                        <div class="post-content">${p.content}</div>
+                    </div>
+                `;
+            });
         }
 
         function manageSettings() {
-            const url = prompt("배경 이미지 URL을 입력하세요 (공백 시 초기화)");
+            const url = prompt("배경 이미지 URL 입력");
             if(url !== null) { localStorage.setItem('blue_bg_img', url); location.reload(); }
         }
     </script>
