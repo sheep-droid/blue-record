@@ -5,165 +5,222 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>푸르른 기록</title>
     <style>
-        body { font-family: -apple-system, sans-serif; margin: 0; padding: 0; background-color: #f2f2f7; color: #333; padding-bottom: 140px; }
+        /* 기본 스타일 */
+        body { font-family: -apple-system, sans-serif; margin: 0; padding: 0; background-color: #f2f2f7; color: #333; padding-bottom: 120px; }
         #bg-image { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1; opacity: 0.3; display: none; }
         
         /* 잠금 화면 */
-        #lock-screen { position: fixed; top:0; left:0; width: 100%; height: 100%; background: #f2f2f7; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #lock-screen input { padding: 15px; font-size: 20px; border: 2px solid #3b82f6; border-radius: 10px; width: 200px; text-align: center; margin-bottom: 15px; outline: none; }
-        #lock-screen button { padding: 15px 30px; font-size: 18px; background: #3b82f6; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        #lock-screen { position: fixed; top:0; left:0; width: 100%; height: 100%; background: #f2f2f7; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
+        #lock-bg-display { position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover; opacity: 0.4; z-index: -1; }
+        #lock-screen input { padding: 15px; font-size: 20px; border: 2px solid #3b82f6; border-radius: 12px; width: 220px; text-align: center; margin-bottom: 15px; outline: none; background: rgba(255,255,255,0.9); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        #lock-screen button { padding: 15px 35px; font-size: 18px; background: #3b82f6; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
 
         #main-content { display: none; }
         
-        /* 탭 메뉴 */
+        /* 상단 탭 */
         .tabs { display: flex; overflow-x: auto; padding: 10px 15px; background: rgba(255,255,255,0.9); border-bottom: 1px solid #ddd; white-space: nowrap; gap: 8px; position: sticky; top: 0; z-index: 100; scrollbar-width: none; }
         .tabs::-webkit-scrollbar { display: none; }
-        .tab { padding: 8px 18px; border-radius: 20px; background: #eee; border: none; font-size: 14px; cursor: pointer; color: #555; transition: 0.2s; }
+        .tab { padding: 8px 18px; border-radius: 20px; background: #eee; border: none; font-size: 14px; cursor: pointer; color: #555; }
         .tab.active { background: #3b82f6; color: white; font-weight: bold; }
         
-        /* 에디터 */
+        /* 리스트 뷰 */
         .container { padding: 15px; max-width: 600px; margin: 0 auto; }
         .editor { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px; }
-        .editor select { padding: 8px 12px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 15px; outline: none; color: #3b82f6; font-weight: bold; background: #fff; }
-        .editor input[type="text"] { width: 100%; border: none; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 18px; font-weight: bold; margin-bottom: 15px; outline: none; box-sizing: border-box; }
-        .editor textarea { width: 100%; border: none; height: 100px; resize: none; font-size: 16px; outline: none; box-sizing: border-box; color: #555; }
+        .editor select, .editor input, .editor textarea { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 10px; margin-bottom: 10px; box-sizing: border-box; outline: none; }
         
-        /* 사진 미리보기 */
-        #img-preview { display: flex; gap: 8px; overflow-x: auto; margin: 10px 0; padding-bottom: 5px; }
-        #img-preview img { width: 70px; height: 70px; object-fit: cover; border-radius: 10px; border: 1px solid #eee; }
+        .post { background: white; padding: 18px; border-radius: 15px; margin-bottom: 12px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.03); border: 1px solid #efefef; }
+        .post-title { font-size: 17px; font-weight: bold; margin: 8px 0; color: #1a1a1a; }
+        .post-meta { font-size: 12px; color: #3b82f6; font-weight: bold; }
+        .post-preview { font-size: 14px; color: #666; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.5; }
 
-        /* 게시글 카드 */
-        .post { background: white; padding: 20px; border-radius: 15px; margin-bottom: 15px; position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .post-actions { position: absolute; top: 15px; right: 20px; display: flex; gap: 12px; }
-        .btn-edit { color: #3b82f6; font-size: 13px; font-weight: bold; cursor: pointer; }
-        .btn-delete { color: #ff3b30; font-size: 13px; font-weight: bold; cursor: pointer; }
-        .post-images { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 15px; }
-        .post-images img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 10px; }
-        
-        /* BGM 바 */
-        .bgm-bar { position: fixed; bottom: 15px; left: 15px; right: 15px; background: rgba(59, 130, 246, 0.95); color: white; border-radius: 20px; padding: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); backdrop-filter: blur(10px); z-index: 1000; }
-        .bgm-iframe-container { width: 100%; height: 55px; border-radius: 10px; overflow: hidden; background: #000; margin-top: 8px; }
+        /* 상세보기 (모달) */
+        #post-detail { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 10002; overflow-y: auto; }
+        .detail-header { position: sticky; top: 0; background: white; padding: 15px; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; }
+        .detail-body { padding: 20px; max-width: 600px; margin: 0 auto; }
+        .detail-imgs img { width: 100%; border-radius: 12px; margin-bottom: 10px; }
+        .detail-content { font-size: 16px; line-height: 1.8; white-space: pre-wrap; margin: 20px 0; color: #333; }
 
-        /* 설정 레이어 */
-        #settings-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 400px; background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 10001; }
+        /* 설정창 */
+        #settings-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 400px; background: white; border-radius: 25px; padding: 25px; box-shadow: 0 10px 50px rgba(0,0,0,0.3); z-index: 10001; }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; }
-        .setting-item { margin-bottom: 15px; }
-        .tab-item { display: flex; justify-content: space-between; align-items: center; background: #f8f8f8; padding: 8px 12px; border-radius: 10px; margin-bottom: 5px; }
+        .setting-row { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .setting-row label { display: block; font-size: 14px; font-weight: bold; margin-bottom: 8px; }
+
+        .bgm-bar { position: fixed; bottom: 15px; left: 15px; right: 15px; background: rgba(59, 130, 246, 0.95); color: white; border-radius: 20px; padding: 12px; z-index: 1000; backdrop-filter: blur(10px); }
     </style>
 </head>
 <body>
 
     <div id="lock-screen">
-        <h2 style="color: #3b82f6; margin-bottom: 20px;">🔒 푸르른 기록</h2>
+        <img id="lock-bg-display" src="" onerror="this.style.display='none'">
+        <h2 style="color: #3b82f6; z-index: 1; text-shadow: 0 2px 10px rgba(255,255,255,0.8);">🔒 푸르른 기록</h2>
         <input type="password" id="pwd-input" placeholder="비밀번호" onkeypress="if(event.keyCode==13) checkPwd()">
         <button onclick="checkPwd()">입장하기</button>
+    </div>
+
+    <div id="post-detail">
+        <div class="detail-header">
+            <span onclick="closeDetail()" style="font-size: 24px; cursor: pointer; padding: 5px 15px;">←</span>
+            <div id="detail-header-title" style="font-weight: bold; font-size: 17px;">상세보기</div>
+            <span onclick="handleDeleteFromDetail()" style="color: #ff3b30; font-size: 14px; cursor: pointer; padding: 5px 15px;">삭제</span>
+        </div>
+        <div class="detail-body">
+            <div id="detail-meta" style="color: #888; font-size: 13px; margin-bottom: 15px;"></div>
+            <div id="detail-imgs" class="detail-imgs"></div>
+            <div id="detail-text" class="detail-content"></div>
+        </div>
     </div>
 
     <div class="modal-overlay" onclick="closeSettings()"></div>
     <div id="settings-modal">
         <h3 style="margin-top:0;">⚙️ 설정</h3>
-        <div class="setting-item">
-            <label style="font-size:14px; font-weight:bold;">배경 이미지 URL</label>
-            <input type="text" id="bg-url-input" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:8px; margin-top:5px;" placeholder="https://...">
+        <div class="setting-row">
+            <label>메인 화면 배경 (갤러리)</label>
+            <input type="file" onchange="uploadImage(this, 'blue_bg_img')" accept="image/*">
         </div>
-        <hr>
-        <div class="setting-item">
-            <label style="font-size:14px; font-weight:bold;">탭(카테고리) 관리</label>
-            <div id="tab-manage-list" style="margin-top:10px; max-height:150px; overflow-y:auto;"></div>
-            <div style="display:flex; gap:5px; margin-top:10px;">
-                <input type="text" id="new-tab-name" style="flex:1; padding:8px; border:1px solid #ddd; border-radius:8px;" placeholder="새 탭 이름">
-                <button onclick="addNewTab()" style="background:#3b82f6; color:white; border:none; border-radius:8px; padding:0 15px;">추가</button>
+        <div class="setting-row">
+            <label>잠금 화면 배경 (갤러리)</label>
+            <input type="file" onchange="uploadImage(this, 'blue_lock_bg')" accept="image/*">
+        </div>
+        <div class="setting-row">
+            <label>탭 관리</label>
+            <div id="tab-manage-list" style="max-height: 100px; overflow-y: auto; margin-bottom: 10px;"></div>
+            <div style="display:flex; gap:5px;">
+                <input type="text" id="new-tab-input" style="flex:1; padding:8px;" placeholder="새 탭 이름">
+                <button onclick="addTab()" style="background:#3b82f6; color:white; border:none; border-radius:8px; padding:0 10px;">추가</button>
             </div>
         </div>
-        <button onclick="saveSettings()" style="width:100%; background:#3b82f6; color:white; border:none; padding:12px; border-radius:10px; font-weight:bold; margin-top:10px;">저장 후 적용</button>
+        <button onclick="location.reload()" style="width:100%; background:#3b82f6; color:white; border:none; padding:12px; border-radius:12px; font-weight:bold; margin-top:10px;">저장 및 새로고침</button>
     </div>
 
     <div id="main-content">
         <img id="bg-image" src="" onerror="this.style.display='none'">
         <div class="tabs" id="tab-container"></div>
-
         <div class="container">
             <div class="editor">
                 <select id="cat-select"></select>
-                <input type="text" id="title" placeholder="제목을 입력하세요">
-                <textarea id="content" placeholder="오늘의 기록을 남겨보세요..."></textarea>
-                <div id="img-preview"></div>
+                <input type="text" id="post-title-in" placeholder="제목">
+                <textarea id="post-content-in" placeholder="기록을 남기세요..."></textarea>
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <label style="color:#888; font-size:14px; cursor:pointer;">📷 사진 추가 <input type="file" id="file-input" multiple accept="image/*" style="display:none;"></label>
-                    <button class="btn-submit" style="background:#3b82f6; color:white; border:none; padding:10px 25px; border-radius:20px; font-weight:bold;" onclick="savePost()">등록</button>
+                    <label style="font-size:13px; color:#888;">📷 <input type="file" id="post-files" multiple accept="image/*"></label>
+                    <button onclick="savePost()" style="background:#3b82f6; color:white; border:none; padding:10px 25px; border-radius:20px; font-weight:bold;">등록</button>
                 </div>
             </div>
             <div id="post-list"></div>
         </div>
-
         <div class="bgm-bar">
-            <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:bold;">
-                <span>🎵 BGM 재생 중</span>
-                <span style="opacity:0.8;">BGM</span>
-            </div>
-            <div class="bgm-iframe-container">
+            <div style="font-size:12px; font-weight:bold; margin-bottom:5px;">🎵 BGM 재생 중</div>
+            <div style="width:100%; height:55px; border-radius:10px; overflow:hidden; background:#000;">
                 <iframe width="100%" height="100%" src="https://www.youtube.com/embed/NQPtBQhtTYQ?enablejsapi=1&autoplay=1&loop=1&playlist=NQPtBQhtTYQ" frameborder="0" allow="autoplay; encrypted-media"></iframe>
             </div>
         </div>
     </div>
 
     <script>
-        let editIndex = -1;
-        let uploadedImages = [];
+        let currentDetailIdx = -1;
+        let categories = JSON.parse(localStorage.getItem('blue_tabs') || '["일반", "일기", "메모"]');
         let currentTab = '전체';
-        let categories = JSON.parse(localStorage.getItem('blue_tabs') || '["일반", "일기", "메모", "페르소나"]');
 
         function checkPwd() {
             if (document.getElementById('pwd-input').value === '1969') {
-                sessionStorage.setItem('auth_blue_vfinal', 'true');
-                unlockScreen();
-            } else { alert('비밀번호가 틀렸습니다.'); }
+                sessionStorage.setItem('blue_auth', 'true');
+                unlock();
+            } else { alert('비밀번호가 틀립니다.'); document.getElementById('pwd-input').value = ''; }
         }
 
-        function unlockScreen() {
+        function unlock() {
             document.getElementById('lock-screen').style.display = 'none';
             document.getElementById('main-content').style.display = 'block';
-            renderTabs();
-            loadPosts();
+            renderTabs(); loadPosts();
         }
 
         window.onload = () => {
-            if (sessionStorage.getItem('auth_blue_vfinal') === 'true') unlockScreen();
-            const savedBg = localStorage.getItem('blue_bg_img');
-            if(savedBg) { document.getElementById('bg-image').src = savedBg; document.getElementById('bg-image').style.display = 'block'; }
+            if (sessionStorage.getItem('blue_auth') === 'true') unlock();
+            const mb = localStorage.getItem('blue_bg_img');
+            const lb = localStorage.getItem('blue_lock_bg');
+            if(mb) { document.getElementById('bg-image').src = mb; document.getElementById('bg-image').style.display = 'block'; }
+            if(lb) { document.getElementById('lock-bg-display').src = lb; }
         };
 
-        // 이미지 처리
-        document.getElementById('file-input').addEventListener('change', function(e) {
-            Array.from(e.target.files).forEach(file => {
+        function uploadImage(input, key) {
+            const file = input.files[0];
+            if(file) {
                 const reader = new FileReader();
-                reader.onload = (ev) => { uploadedImages.push(ev.target.result); renderPreview(); };
+                reader.onload = (e) => localStorage.setItem(key, e.target.result);
                 reader.readAsDataURL(file);
-            });
-        });
-
-        function renderPreview() {
-            document.getElementById('img-preview').innerHTML = uploadedImages.map(src => `<img src="${src}">`).join('');
+            }
         }
 
-        // 탭 & 카테고리 렌더링
         function renderTabs() {
             const container = document.getElementById('tab-container');
-            const select = document.getElementById('cat-select');
-            
             container.innerHTML = `<button class="tab ${currentTab==='전체'?'active':''}" onclick="setTab('전체')">전체</button>`;
             container.innerHTML += categories.map(cat => `<button class="tab ${currentTab===cat?'active':''}" onclick="setTab('${cat}')">${cat}</button>`).join('');
-            container.innerHTML += `<button class="tab" onclick="openSettings()">⚙️ 설정</button>`;
-            
-            select.innerHTML = categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+            container.innerHTML += `<button class="tab" onclick="openSettings()">⚙️</button>`;
+            document.getElementById('cat-select').innerHTML = categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
         }
 
-        // 설정 모달 제어
+        function setTab(name) { currentTab = name; renderTabs(); loadPosts(); }
+
+        async function savePost() {
+            const title = document.getElementById('post-title-in').value || "제목 없음";
+            const content = document.getElementById('post-content-in').value;
+            const cat = document.getElementById('cat-select').value;
+            const files = document.getElementById('post-files').files;
+            
+            let imgs = [];
+            for(let f of files) {
+                imgs.push(await new Promise(res => {
+                    const r = new FileReader(); r.onload = (e) => res(e.target.result); r.readAsDataURL(f);
+                }));
+            }
+
+            const posts = JSON.parse(localStorage.getItem('blue_posts_v2') || '[]');
+            posts.unshift({ title, content, cat, images: imgs, date: new Date().toLocaleString() });
+            localStorage.setItem('blue_posts_v2', JSON.stringify(posts));
+            location.reload();
+        }
+
+        function loadPosts() {
+            const posts = JSON.parse(localStorage.getItem('blue_posts_v2') || '[]');
+            const list = document.getElementById('post-list');
+            list.innerHTML = '';
+            posts.forEach((p, i) => {
+                if (currentTab !== '전체' && p.cat !== currentTab) return;
+                list.innerHTML += `
+                    <div class="post" onclick="openDetail(${i})">
+                        <div class="post-meta">[${p.cat}] ${p.date.split(' ')[0]}</div>
+                        <div class="post-title">${p.title}</div>
+                        <div class="post-preview">${p.content}</div>
+                    </div>
+                `;
+            });
+        }
+
+        function openDetail(i) {
+            const posts = JSON.parse(localStorage.getItem('blue_posts_v2') || '[]');
+            const p = posts[i]; currentDetailIdx = i;
+            document.getElementById('detail-header-title').innerText = p.title;
+            document.getElementById('detail-meta').innerText = `[${p.cat}] ${p.date}`;
+            document.getElementById('detail-text').innerText = p.content;
+            document.getElementById('detail-imgs').innerHTML = p.images.map(img => `<img src="${img}">`).join('');
+            document.getElementById('post-detail').style.display = 'block';
+        }
+
+        function closeDetail() { document.getElementById('post-detail').style.display = 'none'; }
+
+        function handleDeleteFromDetail() {
+            if(confirm("이 글을 삭제할까요?")) {
+                const posts = JSON.parse(localStorage.getItem('blue_posts_v2') || '[]');
+                posts.splice(currentDetailIdx, 1);
+                localStorage.setItem('blue_posts_v2', JSON.stringify(posts));
+                location.reload();
+            }
+        }
+
         function openSettings() {
             document.querySelector('.modal-overlay').style.display = 'block';
             document.getElementById('settings-modal').style.display = 'block';
-            document.getElementById('bg-url-input').value = localStorage.getItem('blue_bg_img') || '';
-            renderTabManageList();
+            renderTabSettings();
         }
 
         function closeSettings() {
@@ -171,91 +228,23 @@
             document.getElementById('settings-modal').style.display = 'none';
         }
 
-        function renderTabManageList() {
+        function renderTabSettings() {
             const list = document.getElementById('tab-manage-list');
-            list.innerHTML = categories.map((cat, idx) => `
-                <div class="tab-item">
-                    <input type="text" value="${cat}" onchange="renameTab(${idx}, this.value)" style="border:none; background:transparent; font-size:14px; width:70%;">
-                    <span onclick="removeTab(${idx})" style="color:#ff3b30; cursor:pointer; font-weight:bold;">삭제</span>
+            list.innerHTML = categories.map((cat, i) => `
+                <div style="display:flex; justify-content:space-between; background:#f8f8f8; padding:5px 10px; border-radius:8px; margin-bottom:5px;">
+                    <span style="font-size:14px;">${cat}</span>
+                    <span onclick="delTab(${i})" style="color:#ff3b30; cursor:pointer; font-weight:bold;">×</span>
                 </div>
             `).join('');
         }
 
-        function renameTab(idx, newName) { if(newName) categories[idx] = newName; }
-        function removeTab(idx) { if(confirm('이 탭을 삭제할까요?')) { categories.splice(idx, 1); renderTabManageList(); } }
-        function addNewTab() {
-            const name = document.getElementById('new-tab-name').value;
-            if(name) { categories.push(name); document.getElementById('new-tab-name').value = ''; renderTabManageList(); }
+        function addTab() {
+            const name = document.getElementById('new-tab-input').value;
+            if(name) { categories.push(name); localStorage.setItem('blue_tabs', JSON.stringify(categories)); 
+            document.getElementById('new-tab-input').value = ''; renderTabSettings(); }
         }
 
-        function saveSettings() {
-            localStorage.setItem('blue_bg_img', document.getElementById('bg-url-input').value);
-            localStorage.setItem('blue_tabs', JSON.stringify(categories));
-            location.reload();
-        }
-
-        // 게시글 관련
-        function savePost() {
-            const cat = document.getElementById('cat-select').value;
-            const title = document.getElementById('title').value || "제목 없음";
-            const content = document.getElementById('content').value;
-            if (!content && uploadedImages.length === 0) return;
-
-            const posts = JSON.parse(localStorage.getItem('blue_posts_v2') || '[]');
-            if (editIndex > -1) {
-                posts[editIndex] = { ...posts[editIndex], cat, title, content, images: [...uploadedImages] };
-                editIndex = -1;
-                document.querySelector('.btn-submit').innerText = "등록";
-            } else {
-                posts.unshift({ cat, title, content, images: [...uploadedImages], date: new Date().toLocaleDateString() });
-            }
-            localStorage.setItem('blue_posts_v2', JSON.stringify(posts));
-            document.getElementById('title').value = ''; document.getElementById('content').value = '';
-            uploadedImages = []; renderPreview(); loadPosts();
-        }
-
-        function setTab(name) { currentTab = name; renderTabs(); loadPosts(); }
-
-        function loadPosts() {
-            const posts = JSON.parse(localStorage.getItem('blue_posts_v2') || '[]');
-            const list = document.getElementById('post-list');
-            list.innerHTML = '';
-            posts.forEach((p, index) => {
-                if (currentTab !== '전체' && p.cat !== currentTab) return;
-                list.innerHTML += `
-                    <div class="post">
-                        <div class="post-actions">
-                            <span class="btn-edit" onclick="startEdit(${index})">수정</span>
-                            <span class="btn-delete" onclick="deletePost(${index})">삭제</span>
-                        </div>
-                        <div class="post-meta"><span class="post-cat">[${p.cat}]</span><span>${p.date}</span></div>
-                        <div class="post-title">${p.title}</div>
-                        <div class="post-content">${p.content}</div>
-                        <div class="post-images">${p.images.map(img => `<img src="${img}">`).join('')}</div>
-                    </div>
-                `;
-            });
-        }
-
-        function startEdit(index) {
-            const posts = JSON.parse(localStorage.getItem('blue_posts_v2') || '[]');
-            const post = posts[index];
-            document.getElementById('cat-select').value = post.cat;
-            document.getElementById('title').value = post.title;
-            document.getElementById('content').value = post.content;
-            uploadedImages = [...post.images]; renderPreview();
-            editIndex = index; document.querySelector('.btn-submit').innerText = "수정 완료";
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function deletePost(index) {
-            if (confirm("이 기록을 삭제할까요?")) {
-                const posts = JSON.parse(localStorage.getItem('blue_posts_v2') || '[]');
-                posts.splice(index, 1);
-                localStorage.setItem('blue_posts_v2', JSON.stringify(posts));
-                loadPosts();
-            }
-        }
+        function delTab(i) { categories.splice(i, 1); localStorage.setItem('blue_tabs', JSON.stringify(categories)); renderTabSettings(); }
     </script>
 </body>
 </html>
