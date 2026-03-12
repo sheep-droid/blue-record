@@ -43,9 +43,17 @@
         .post-images img { width: 120px; height: 120px; object-fit: cover; border-radius: 12px; }
         
         /* BGM 플레이어 */
-        .bgm-bar { position: fixed; bottom: 15px; left: 15px; right: 15px; background: rgba(59, 130, 246, 0.95); color: white; border-radius: 20px; padding: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); backdrop-filter: blur(10px); z-index: 1000; }
-        .bgm-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; font-size: 14px; }
-        .bgm-iframe-container { width: 100%; height: 60px; border-radius: 12px; overflow: hidden; background: #000; }
+        .        <div class="bgm-bar">
+            <div class="bgm-header">
+                <span>BGM 🎵 Sea Breeze</span>
+                <span>재생 중</span>
+            </div>
+            <div class="bgm-iframe-container" id="bgm-container">
+                <iframe width="100%" height="100%" src="https://www.youtube.com/embed/5qap5aO4i9A?autoplay=1&mute=1&loop=1&playlist=5qap5aO4i9A" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            </div>
+            <p style="font-size: 10px; margin-top: 5px; opacity: 0.7;">※ 자동 재생이 안 될 경우 화면 아무 곳이나 한 번 터치해 주세요!</p>
+        </div>
+
         
         /* 사진 미리보기 */
         #img-preview { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 15px; }
