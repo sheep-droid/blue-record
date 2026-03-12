@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>푸르른 기록</title>
     <style>
-        /* 기본 레이아웃 및 배경 */
+        /* 기본 스타일 및 배경 */
         body { font-family: -apple-system, sans-serif; margin: 0; padding: 0; background-color: #f2f2f7; color: #333; padding-bottom: 160px; overflow-x: hidden; }
         #bg-image { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1; opacity: 0.3; display: none; }
         
@@ -15,18 +15,16 @@
         #lock-screen input { padding: 15px; font-size: 20px; border: 2px solid #3b82f6; border-radius: 12px; width: 220px; text-align: center; margin-bottom: 15px; outline: none; background: rgba(255,255,255,0.9); }
         #lock-screen button { padding: 15px 35px; font-size: 18px; background: #3b82f6; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
 
-        /* 메인 컨텐츠 및 탭 */
+        /* 메인 레이아웃 */
         #main-content { display: none; }
         .tabs { display: flex; overflow-x: auto; padding: 10px 15px; background: rgba(255,255,255,0.9); border-bottom: 1px solid #ddd; white-space: nowrap; gap: 8px; position: sticky; top: 0; z-index: 100; scrollbar-width: none; }
-        .tabs::-webkit-scrollbar { display: none; }
-        .tab { padding: 8px 18px; border-radius: 20px; background: #eee; border: none; font-size: 14px; cursor: pointer; color: #555; }
+        .tab { padding: 8px 18px; border-radius: 20px; background: #eee; border: none; font-size: 14px; cursor: pointer; }
         .tab.active { background: #3b82f6; color: white; font-weight: bold; }
         
-        /* 에디터 및 게시글 리스트 */
+        /* 에디터 및 포스트 */
         .container { padding: 15px; max-width: 600px; margin: 0 auto; }
         .editor { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px; }
         .editor select, .editor input, .editor textarea { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 10px; margin-bottom: 10px; box-sizing: border-box; outline: none; font-size: 15px; }
-        
         .post { background: white; padding: 18px; border-radius: 15px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); border: 1px solid #efefef; }
         .post-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .post-meta { font-size: 12px; color: #3b82f6; font-weight: bold; }
@@ -36,10 +34,6 @@
         .detail-header { position: sticky; top: 0; background: white; padding: 15px; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; }
         .detail-body { padding: 20px; max-width: 600px; margin: 0 auto; }
         .detail-imgs img { width: 100%; border-radius: 12px; margin-bottom: 10px; }
-
-        /* 설정 모달 */
-        #settings-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 400px; background: white; border-radius: 25px; padding: 25px; box-shadow: 0 10px 50px rgba(0,0,0,0.3); z-index: 10001; }
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; }
 
         /* BGM 컨트롤 바 */
         .bgm-bar { position: fixed; bottom: 15px; left: 15px; right: 15px; background: rgba(59, 130, 246, 0.95); color: white; border-radius: 20px; padding: 12px; z-index: 1000; backdrop-filter: blur(10px); }
@@ -53,37 +47,10 @@
 
     <div id="lock-screen">
         <img id="lock-bg-display" src="" onerror="this.style.display='none'">
-        <h2 style="color: #3b82f6; z-index: 1; text-shadow: 0 2px 8px rgba(255,255,255,0.8);">🔒 푸르른 기록</h2>
+        <h2 style="color: #3b82f6; z-index: 1;">🔒 푸르른 기록</h2>
         <input type="password" id="pwd-input" placeholder="비밀번호" onkeypress="if(event.keyCode==13) checkPwd()">
         <button onclick="checkPwd()">입장하기</button>
         <p style="font-size:11px; color:#888; margin-top:15px; z-index:1;">※ 입장 시 소리가 재생됩니다.</p>
-    </div>
-
-    <div id="post-detail">
-        <div class="detail-header">
-            <span onclick="closeDetail()" style="font-size: 24px; cursor: pointer; padding: 5px 15px;">←</span>
-            <div id="detail-header-title" style="font-weight: bold; font-size: 17px;">기록 보기</div>
-            <span onclick="handleDeleteFromDetail()" style="color: #ff3b30; font-size: 14px; cursor: pointer; padding: 5px 15px;">삭제</span>
-        </div>
-        <div class="detail-body">
-            <div id="detail-meta" style="color: #888; font-size: 13px; margin-bottom: 15px;"></div>
-            <div id="detail-imgs" class="detail-imgs"></div>
-            <div id="detail-text" style="font-size: 16px; line-height: 1.8; white-space: pre-wrap; color: #333;"></div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" onclick="closeSettings()"></div>
-    <div id="settings-modal">
-        <h3 style="margin-top:0;">⚙️ 설정</h3>
-        <div style="margin-bottom:15px;">
-            <label style="font-size:12px; font-weight:bold;">메인 배경</label>
-            <input type="file" onchange="uploadImage(this, 'blue_bg_img')" accept="image/*" style="width:100%; margin-top:5px;">
-        </div>
-        <div style="margin-bottom:15px;">
-            <label style="font-size:12px; font-weight:bold;">잠금 배경</label>
-            <input type="file" onchange="uploadImage(this, 'blue_lock_bg')" accept="image/*" style="width:100%; margin-top:5px;">
-        </div>
-        <button onclick="location.reload()" style="width:100%; background:#3b82f6; color:white; border:none; padding:12px; border-radius:12px; font-weight:bold;">저장 및 적용</button>
     </div>
 
     <div id="main-content">
@@ -107,11 +74,24 @@
                 <button id="toggle-play" class="play-btn" onclick="toggleMusic()">▶</button>
                 <div class="volume-control">
                     <span style="font-size:12px; font-weight:bold;">BGM</span>
-                    <input type="range" id="volume-slider" min="0" max="100" value="50" oninput="setVolume(this.value)">
+                    <input type="range" min="0" max="100" value="50" oninput="setVolume(this.value)" style="flex:1;">
                 </div>
                 <span id="vol-txt" style="font-size:10px; width:30px;">50%</span>
             </div>
             <div style="display:none;"><div id="player"></div></div>
+        </div>
+    </div>
+
+    <div id="post-detail">
+        <div class="detail-header">
+            <span onclick="closeDetail()" style="font-size: 24px; cursor: pointer; padding: 5px 15px;">←</span>
+            <div id="detail-header-title" style="font-weight: bold; font-size: 17px;">기록 보기</div>
+            <span onclick="handleDeleteFromDetail()" style="color: #ff3b30; font-size: 14px; cursor: pointer; padding: 5px 15px;">삭제</span>
+        </div>
+        <div class="detail-body">
+            <div id="detail-meta" style="color: #888; font-size: 13px; margin-bottom: 15px;"></div>
+            <div id="detail-imgs" class="detail-imgs"></div>
+            <div id="detail-text" style="font-size: 16px; line-height: 1.8; white-space: pre-wrap; color: #333;"></div>
         </div>
     </div>
 
@@ -121,35 +101,20 @@
         let categories = JSON.parse(localStorage.getItem('blue_tabs') || '["일반", "일기", "메모", "페르소나"]');
         let currentTab = '전체';
 
-        // 유튜브 플레이어 설정
+        // 유튜브 설정
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('player', {
-                height: '0', width: '0',
-                videoId: 'NQPtBQhtTYQ',
+                height: '0', width: '0', videoId: 'NQPtBQhtTYQ',
                 playerVars: { 'autoplay': 0, 'loop': 1, 'playlist': 'NQPtBQhtTYQ', 'controls': 0 },
                 events: { 'onReady': (e) => e.target.setVolume(50) }
             });
         }
 
-        function toggleMusic() {
-            if (!player) return;
-            if (isPlaying) { player.pauseVideo(); isPlaying = false; } 
-            else { player.playVideo(); isPlaying = true; }
-            document.getElementById('toggle-play').innerText = isPlaying ? "⏸" : "▶";
-        }
-
-        function setVolume(val) {
-            if (player && player.setVolume) {
-                player.setVolume(val);
-                document.getElementById('vol-txt').innerText = `${val}%`;
-            }
-        }
-
+        // 입장 및 음악 시작
         function checkPwd() {
             if (document.getElementById('pwd-input').value === '1969') {
                 sessionStorage.setItem('blue_auth', 'true');
                 unlock();
-                // 입장과 동시에 재생 시도 (사용자 클릭 이벤트 활용)
                 setTimeout(() => { if(player) { player.playVideo(); isPlaying = true; document.getElementById('toggle-play').innerText = "⏸"; } }, 500);
             } else { alert('비밀번호가 틀렸습니다.'); }
         }
@@ -157,30 +122,51 @@
         function unlock() {
             document.getElementById('lock-screen').style.display = 'none';
             document.getElementById('main-content').style.display = 'block';
-            renderTabs(); loadPosts();
+            // 삼성 브라우저 안정성: 약간의 지연 후 렌더링
+            setTimeout(() => { renderTabs(); loadPosts(); }, 200);
         }
 
         window.onload = () => {
             const mb = localStorage.getItem('blue_bg_img'), lb = localStorage.getItem('blue_lock_bg');
             if(mb) { document.getElementById('bg-image').src = mb; document.getElementById('bg-image').style.display = 'block'; }
-            if(lb) { document.getElementById('lock-bg-display').src = lb; }
+            if(lb) document.getElementById('lock-bg-display').src = lb;
             if (sessionStorage.getItem('blue_auth') === 'true') unlock();
         };
 
-        function uploadImage(input, key) {
-            const file = input.files[0];
-            if(file) {
-                const reader = new FileReader();
-                reader.onload = (e) => localStorage.setItem(key, e.target.result);
-                reader.readAsDataURL(file);
-            }
+        // 핵심 기능: 게시글 로드 (삼성 브라우저 대응)
+        function loadPosts() {
+            const list = document.getElementById('post-list');
+            if (!list) return;
+            try {
+                const posts = JSON.parse(localStorage.getItem('blue_posts_v2') || '[]');
+                list.innerHTML = '';
+                if (posts.length === 0) {
+                    list.innerHTML = '<div style="text-align:center; padding:50px; color:#ccc;">작성된 기록이 없습니다.</div>';
+                    return;
+                }
+                posts.forEach((p, i) => {
+                    if (currentTab !== '전체' && p.cat !== currentTab) return;
+                    list.innerHTML += `
+                        <div class="post">
+                            <div class="post-header">
+                                <div class="post-meta">[${p.cat}] ${p.date}</div>
+                                <div onclick="startEdit(${i})" style="color:#3b82f6; font-size:12px; font-weight:bold; cursor:pointer; padding:5px;">수정</div>
+                            </div>
+                            <div onclick="openDetail(${i})">
+                                <div style="font-weight:bold; font-size:17px; margin-bottom:5px;">${p.title}</div>
+                                <div style="font-size:14px; color:#666; display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${p.content}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (e) { list.innerHTML = '<div style="text-align:center; padding:20px; color:red;">불러오기 실패</div>'; }
         }
 
         function renderTabs() {
             const container = document.getElementById('tab-container');
+            if (!container) return;
             container.innerHTML = `<button class="tab ${currentTab==='전체'?'active':''}" onclick="setTab('전체')">전체</button>`;
             container.innerHTML += categories.map(cat => `<button class="tab ${currentTab===cat?'active':''}" onclick="setTab('${cat}')">${cat}</button>`).join('');
-            container.innerHTML += `<button class="tab" onclick="openSettings()">⚙️</button>`;
             document.getElementById('cat-select').innerHTML = categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
         }
 
@@ -190,56 +176,18 @@
             const title = document.getElementById('post-title-in').value || "제목 없음", content = document.getElementById('post-content-in').value;
             const cat = document.getElementById('cat-select').value, files = document.getElementById('post-files').files;
             const now = new Date(), dateStr = `${now.getFullYear()}. ${now.getMonth() + 1}. ${now.getDate()}.`;
-
             let imgs = [];
             for(let f of files) {
-                imgs.push(await new Promise(res => {
-                    const r = new FileReader(); r.onload = (e) => res(e.target.result); r.readAsDataURL(f);
-                }));
+                imgs.push(await new Promise(res => { const r = new FileReader(); r.onload = (e) => res(e.target.result); r.readAsDataURL(f); }));
             }
-
             const posts = JSON.parse(localStorage.getItem('blue_posts_v2') || '[]');
             if (editIndex > -1) {
                 posts[editIndex] = { ...posts[editIndex], title, content, cat, images: imgs.length ? imgs : posts[editIndex].images };
                 editIndex = -1;
-            } else {
-                posts.unshift({ title, content, cat, images: imgs, date: dateStr });
-            }
+            } else { posts.unshift({ title, content, cat, images: imgs, date: dateStr }); }
             localStorage.setItem('blue_posts_v2', JSON.stringify(posts));
-            location.reload();
-        }
-
-        function loadPosts() {
-            try {
-                const posts = JSON.parse(localStorage.getItem('blue_posts_v2') || '[]');
-                const list = document.getElementById('post-list');
-                list.innerHTML = '';
-                posts.forEach((p, i) => {
-                    if (currentTab !== '전체' && p.cat !== currentTab) return;
-                    list.innerHTML += `
-                        <div class="post">
-                            <div class="post-header">
-                                <div class="post-meta">[${p.cat}] ${p.date}</div>
-                                <div onclick="startEdit(${i})" style="color:#3b82f6; font-size:12px; font-weight:bold; cursor:pointer;">수정</div>
-                            </div>
-                            <div onclick="openDetail(${i})">
-                                <div style="font-weight:bold; font-size:17px; margin-bottom:5px;">${p.title}</div>
-                                <div style="font-size:14px; color:#666; display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${p.content}</div>
-                            </div>
-                        </div>
-                    `;
-                });
-            } catch(e) { console.error("데이터 로드 실패", e); }
-        }
-
-        function startEdit(i) {
-            const posts = JSON.parse(localStorage.getItem('blue_posts_v2') || '[]');
-            const p = posts[i]; editIndex = i;
-            document.getElementById('cat-select').value = p.cat;
-            document.getElementById('post-title-in').value = p.title;
-            document.getElementById('post-content-in').value = p.content;
-            document.getElementById('submit-btn').innerText = "수정 완료";
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.getElementById('post-title-in').value = ''; document.getElementById('post-content-in').value = '';
+            document.getElementById('submit-btn').innerText = "등록"; loadPosts();
         }
 
         function openDetail(i) {
@@ -253,16 +201,30 @@
         }
 
         function closeDetail() { document.getElementById('post-detail').style.display = 'none'; }
+        function startEdit(i) {
+            const posts = JSON.parse(localStorage.getItem('blue_posts_v2') || '[]');
+            const p = posts[i]; editIndex = i;
+            document.getElementById('cat-select').value = p.cat;
+            document.getElementById('post-title-in').value = p.title;
+            document.getElementById('post-content-in').value = p.content;
+            document.getElementById('submit-btn').innerText = "수정 완료";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        function toggleMusic() {
+            if (!player) return;
+            if (isPlaying) { player.pauseVideo(); isPlaying = false; } 
+            else { player.playVideo(); isPlaying = true; }
+            document.getElementById('toggle-play').innerText = isPlaying ? "⏸" : "▶";
+        }
+        function setVolume(val) { if (player) { player.setVolume(val); document.getElementById('vol-txt').innerText = `${val}%`; } }
         function handleDeleteFromDetail() {
             if(confirm("삭제하시겠습니까?")) {
                 const posts = JSON.parse(localStorage.getItem('blue_posts_v2') || '[]');
                 posts.splice(currentDetailIdx, 1);
                 localStorage.setItem('blue_posts_v2', JSON.stringify(posts));
-                location.reload();
+                closeDetail(); loadPosts();
             }
         }
-        function openSettings() { document.querySelector('.modal-overlay').style.display = 'block'; document.getElementById('settings-modal').style.display = 'block'; }
-        function closeSettings() { document.querySelector('.modal-overlay').style.display = 'none'; document.getElementById('settings-modal').style.display = 'none'; }
     </script>
 </body>
 </html>
