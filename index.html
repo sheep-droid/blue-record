@@ -74,3 +74,42 @@
     </script>
 </body>
 </html>
+        document.getElementById('img-upload').onchange = (e) => {
+            Array.from(e.target.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (ex) => { uploadedImages.push(ex.target.result); renderPreviews(); };
+                reader.readAsDataURL(file);
+            });
+        };
+
+        function renderPreviews() {
+            document.getElementById('image-preview-container').innerHTML = uploadedImages.map(src => `<img src="${src}" class="preview-img">`).join('');
+        }
+
+        function saveMemo() {
+            const title = document.getElementById('memo-title-input').value || "제목 없음";
+            const content = document.getElementById('memo-input').value;
+            if(!content && uploadedImages.length === 0) return;
+            const memos = JSON.parse(localStorage.getItem('myMemos') || "[]");
+            memos.unshift({ title, content, images: [...uploadedImages], date: new Date().toLocaleDateString() });
+            localStorage.setItem('myMemos', JSON.stringify(memos));
+            uploadedImages = []; renderPreviews();
+            document.getElementById('memo-title-input').value = ""; document.getElementById('memo-input').value = "";
+            displayMemos();
+        }
+
+        function displayMemos() {
+            const list = document.getElementById('memo-list');
+            const memos = JSON.parse(localStorage.getItem('myMemos') || "[]");
+            list.innerHTML = memos.map(m => `
+                <div style="border-bottom:1px solid #eee; padding:15px 0;">
+                    <div style="display:flex; justify-content:space-between; font-weight:bold;"><span>${m.title}</span><span style="font-size:0.8rem; color:#888;">${m.date}</span></div>
+                    <p style="white-space:pre-wrap;">${m.content}</p>
+                    <div class="memo-images-${viewMode}">${m.images.map(img => `<img src="${img}">`).join('')}</div>
+                </div>
+            `).join('');
+        }
+        window.onload = displayMemos;
+    </script>
+</body>
+</html>
